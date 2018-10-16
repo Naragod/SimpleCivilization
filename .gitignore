@@ -1,0 +1,3 @@
+# ignore all files beginning with a .
+.*
+!/.gitignore
