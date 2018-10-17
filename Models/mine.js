@@ -15,6 +15,18 @@ class Mine{
         this.resourcesMap = (function (){return _resourcesMap;})();
     }
 
+    show(){
+        this.seave(resource => {
+            resource.show();
+        });
+    }
+
+    seave(callback){
+        if(!callback)
+            throw new Error("No callback function provided.");
+        this.resources.forEach(lek => callback(lek));
+    }
+
 
 }
 // private methods

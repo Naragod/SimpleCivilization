@@ -29,7 +29,6 @@ class Lek{
         };
         this.mother = args[0] || null;
         this.father = args[1] || null;
-        // biology
         this.age = 0;  
         this.isAlive = amIAlive.bind(this);      
         this.initialSize = Math.floor(random(10, 20));
@@ -41,30 +40,31 @@ class Lek{
         
         if(this.mother !== null && this.father !== null){
             Object.keys(this.properties).forEach(prop => {
-                if(prop == 'speed'){
-                    this.properties[prop] = ((this.mother.properties[prop] + this.father.properties[prop]) + this.mutationRate) * this.speedFactor / 2;
-                    return;
-                }
                 this.properties[prop] = Math.floor(((this.mother.properties[prop] + this.father.properties[prop]) + this.mutationRate)/ 2);
             });
             this.color = this.mother.color.map((c, i) => {
                 return Math.ceil(((c + this.father.color[i]) + this.mutationRate) / 2);
             });
-            return;
         }
-        // properties
-        Object.keys(this.properties).forEach(prop => {
-            this.properties[prop] = Math.floor(random(1, 9));
-        });
-        // Custom set
-        this.color = [random(255), random(255), random(255)].map(c => Math.floor(c));
+        else{
+            // set properties for children without parents
+            Object.keys(this.properties).forEach(prop => {
+                this.properties[prop] = Math.floor(random(1, 9));
+            });
+        }
+        this.color = this.color || [random(255), random(255), random(255)].map(c => Math.ceil(c));
         this.properties.death *= 5;
         this.properties.speed *= this.speedFactor;
         this.properties.growthFactor /= 20;
     }
 
+    survive(){
+        this.wander();
+        
+    }
+
     show(){
-        fill(150);
+        fill(200);
         ellipse(this.x, this.y, this.searchArea.circleRadius);
         fill(color.apply(null, this.color));
         rectMode(CENTER);
@@ -76,6 +76,8 @@ class Lek{
     }
 
     grow(){
+        if(!this.amIAlive())
+            return;
         // to grow, the lek consumes food
         let metabolism = 0.25;
         this.properties.health -= metabolism;

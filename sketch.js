@@ -10,8 +10,10 @@ let currentCollisions = [];
 var mouseConstraint;
 var canvasMouse;
 var bodiesOnMouse = [];
-var counter = 0;
+var _counter = 0;
+var operationFrequency = 1;
 var maximumWorldPopulation = 100;
+var tOperations;
 
 // static methods references
 
@@ -26,6 +28,8 @@ var walls = [
 function setup(){
     canvas = createCanvas(ww, hh);
     generateWorld();
+    tOperations = new TimeOperations(_counter, operationFrequency);
+
     // Mouse and mouse contraints
     canvasMouse = Mouse.create(canvas.elt);
     canvasMouse.pixelRation = pixelDensity();
@@ -47,35 +51,23 @@ function draw(){
     walls.forEach(wall => {
         wall.show();
     });
-    population.activity(lek => {
-        lek.show();
-
-        if(lek.pathFound){
-            lek.travelToDestination();
-            return;
-        }
-        lek.wander();
-    });
+    
+    population.populate();
+    population.show();
 
     // // Resources
-    resources.resources.forEach(resource => {
-        resource.show();
-    });
-
+    // resources.extract();
+    resources.show();
     bodiesOnMouse = Query.point(bodiesArray, canvasMouse.position);
 }
 
 // this function get called before every frame update
 function timeOperations(){
-    counter += 1;
-    let operationFrequency = 1;
-    // grow every 1 sec. Frame rate is 60fps
-    if(counter < 60 * operationFrequency){
-        return;
-    }
-    // operations
-    growLeks();
-    counter = 0;
+    tOperations.complete(() => {
+        // operations
+        // growLeks();
+        // lek.findResources();
+    });
 }
 
 function growLeks(){
@@ -99,8 +91,6 @@ function onCollision(e){
         let pop = population;
         let res = resources;
 
-        
-
         let mother = pop.populationArray[pop.populationMap[idA]];
         let father = pop.populationArray[pop.populationMap[idB]];
 
@@ -110,18 +100,18 @@ function onCollision(e){
             mother = null;
             return;
         }
-        reproduce(mother, father);
+        // reproduce(mother, father);
     }
  }
 
 function generateWorld(){
     let mineBounds = {
-        minX: 0,
-        minY: 0,
+        minX: thickness / 2,
+        minY: thickness / 2,
         maxX: ww,
         maxY: hh
     }
-    population = new Population(20);
+    population = new Population(3);
     resources = new Mine(mineBounds, 10);
 }
 

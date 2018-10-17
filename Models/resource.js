@@ -1,7 +1,7 @@
 
 class Resource{
     constructor(x, y, type){
-        let options = { angle : Math.PI / 2, friction: 100, restitution: 0};
+        let options = { angle : Math.PI / 2, friction: 100, restitution: 0, isStatic: true};
         let resourceType = new ResourceType(type);
 
         this.x = x;
@@ -20,6 +20,10 @@ class Resource{
 
         triangle(v1.x, v1.y, v2.x, v2.y, v3.x, v3.y);
         fill(this.properties.color);
+    }
+
+    extract(){
+        
     }
 
 }

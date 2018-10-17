@@ -7,6 +7,13 @@ class Population{
         this.populationMap = (function (){return _popObject;})();
     }
 
+    show(){
+        this.activity(member => {
+            member.show();
+            member.wander();
+        });
+    }
+
     activity(callback){
         if(!callback)
             throw new Error("No callback function provided.");
@@ -35,6 +42,12 @@ class Population{
         this.populationArray.splice(index, 1);
         delete this.populationMap[member.id];
         console.log("I lek id:", member.id, "have died at the age of", member.age);
+    }
+
+    populate(){
+        this.activity(member => {
+            //
+        });
     }
 }
 
