@@ -27,6 +27,11 @@ class Mine{
         this.resources.forEach(lek => callback(lek));
     }
 
+    mine(){
+        this.seave(() => {
+            //
+        });
+    }
 
 }
 // private methods

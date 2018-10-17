@@ -12,6 +12,8 @@ class Boundary{
         this.height = height;
         this.body = Bodies.rectangle(this.x, this.y, this.width, this.height, options);
         World.add(world, this.body);
+        this.id = this.body.id;
+        this.objectType = this.constructor.name;
     }
 
     show(){

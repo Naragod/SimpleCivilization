@@ -102,8 +102,9 @@ class Lek{
     
     findResources(resources){
         let range = this.properties.sight * 20;
+        let bounds = {a: this.searchArea.position};
         Body.scale(this.searchArea, range, range);
-        nearbyResources = Query.point(resources, this.searchArea.position);
+        nearbyResources = Query.region(resources, this.searchArea.bounds);
         return nearbyResources.sort((a, b) => {
             return ((b.position.x + b.position.y)/2) - ((a.position.x + a.position.y)/2);
         }).filter((e, i) => i === 0); // return nearest resource;

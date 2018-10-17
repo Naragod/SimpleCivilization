@@ -1,6 +1,6 @@
 
 var population;
-var resources;
+var mine;
 var canvas;
 var ww = 1200;
 var hh = 900;
@@ -14,8 +14,9 @@ var _counter = 0;
 var operationFrequency = 1;
 var maximumWorldPopulation = 100;
 var tOperations;
-
-// static methods references
+var collisionModule;
+var _frameRate = 60;
+var OBJECTYPES = {"Lek": false, "Resource": true, "Boundary": true};
 
 // create boundaries
 var walls = [
@@ -25,11 +26,23 @@ var walls = [
                 new Boundary(ww/2, 0, ww, thickness) // top wall
             ];
 
+function generateWorld(){
+    let mineBounds = {
+        minX: thickness / 2,
+        minY: thickness / 2,
+        maxX: ww,
+        maxY: hh
+    };
+
+    population = new Population(3);
+    mine = new Mine(mineBounds, 10);
+    tOperations = new TimeOperations(_frameRate);
+}
+            
 function setup(){
     canvas = createCanvas(ww, hh);
     generateWorld();
-    tOperations = new TimeOperations(_counter, operationFrequency);
-
+    
     // Mouse and mouse contraints
     canvasMouse = Mouse.create(canvas.elt);
     canvasMouse.pixelRation = pixelDensity();
@@ -39,7 +52,7 @@ function setup(){
 
     // World
     World.add(world, mouseConstraint);
-
+    
     // Events
     Events.on(engine, "beforeUpdate", timeOperations);
     Events.on(engine, "collisionStart", onCollision);
@@ -51,34 +64,33 @@ function draw(){
     walls.forEach(wall => {
         wall.show();
     });
-    
-    population.populate();
     population.show();
-
-    // // Resources
-    // resources.extract();
-    resources.show();
+    mine.show();
     bodiesOnMouse = Query.point(bodiesArray, canvasMouse.position);
 }
 
+    
 // this function get called before every frame update
 function timeOperations(){
-    tOperations.complete(() => {
-        // operations
-        // growLeks();
-        // lek.findResources();
+    // game loop
+    tOperations.Complete(1 / _frameRate, () => {
+        // population
+        population.wander();
+        // seave resources
+        mine.mine();
     });
-}
-
-function growLeks(){
-    population.activity(lek => {
-        if(!lek.isAlive()){
-            population.remove(lek);
-            return;
-        }
-        // lek.findResources(resources);
-        lek.grow();
-        lek.show();
+    // timeOperation loop
+    tOperations.Complete(1 / _frameRate, () => {
+        population.activity((lek) => {
+            if(!lek.isAlive()){
+                population.remove(lek);
+                return;
+            }
+            // lek.grow();
+        });
+        mine.seave((resource) => {
+            resource.extract();
+        });
     });
 }
 
@@ -88,14 +100,25 @@ function onCollision(e){
         let pair = pairs[i];
         let idA = pair.bodyA.id;
         let idB = pair.bodyB.id;
-        let pop = population;
-        let res = resources;
+        let objectTypeA = CollisionModule.identifyObject(pair.bodyA, population, mine, walls);
+        let objectTypeB = CollisionModule.identifyObject(pair.bodyB, population, mine, walls);
+        
+        if(OBJECTYPES[objectTypeA] || OBJECTYPES[objectTypeB]){
+            // wall or resource collision
+            console.log(objectTypeA);
+            console.log(objectTypeB);
+            return;
+        }
 
-        let mother = pop.populationArray[pop.populationMap[idA]];
-        let father = pop.populationArray[pop.populationMap[idB]];
+        let mother = population.populationArray[population.populationMap[idA]];
+        let father = population.populationArray[population.populationMap[idB]];
 
         if(population.size >= maximumWorldPopulation){
             // clear memory
+            idA = null;
+            idB = null;
+            pop = null;
+            res = null;
             father = null;
             mother = null;
             return;
@@ -103,17 +126,6 @@ function onCollision(e){
         // reproduce(mother, father);
     }
  }
-
-function generateWorld(){
-    let mineBounds = {
-        minX: thickness / 2,
-        minY: thickness / 2,
-        maxX: ww,
-        maxY: hh
-    }
-    population = new Population(3);
-    resources = new Mine(mineBounds, 10);
-}
 
 function reproduce(mother, father){
     if(mother === undefined || father === undefined)

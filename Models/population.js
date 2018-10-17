@@ -44,9 +44,10 @@ class Population{
         console.log("I lek id:", member.id, "have died at the age of", member.age);
     }
 
-    populate(){
+    wander(){
         this.activity(member => {
-            //
+            // action
+            member.wander();
         });
     }
 }
