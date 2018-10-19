@@ -13,10 +13,12 @@ var bodiesOnMouse = [];
 var _counter = 0;
 var operationFrequency = 1;
 var maximumWorldPopulation = 100;
-var tOperations;
+var gameLoop;
+var specialEventLoop;
 var collisionModule;
-var _frameRate = 60;
-var OBJECTYPES = {"Lek": false, "Resource": true, "Boundary": true};
+var _frameRate_ = 60;
+var initialPopulationSize = 1;
+var initialResourcesAvailable = 10;
 
 // create boundaries
 var walls = [
@@ -34,9 +36,10 @@ function generateWorld(){
         maxY: hh
     };
 
-    population = new Population(3);
-    mine = new Mine(mineBounds, 10);
-    tOperations = new TimeOperations(_frameRate);
+    population = new Population(initialPopulationSize);
+    mine = new Mine(mineBounds, initialResourcesAvailable);
+    gameLoop = new TimeOperations(_frameRate_, 1 / _frameRate_);
+    specialEventLoop = new TimeOperations(_frameRate_, 1);
 }
             
 function setup(){
@@ -72,20 +75,23 @@ function draw(){
     
 // this function get called before every frame update
 function timeOperations(){
-    // game loop
-    tOperations.Complete(1 / _frameRate, () => {
+    gameLoop.Complete(() => {
         // population
         population.wander();
         // seave resources
         mine.mine();
     });
-    // timeOperation loop
-    tOperations.Complete(1 / _frameRate, () => {
+    specialEventLoop.Complete(() => {
         population.activity((lek) => {
             if(!lek.isAlive()){
                 population.remove(lek);
                 return;
             }
+
+            // TODO: redirect lek to resource. Below break the movement
+            // let resourceBodies = mine.resources.map(resource => resource.body);
+            // let closestResource = lek.findClosestResource(resourceBodies);
+            // lek.move(closestResource.x, closestResource.y);
             // lek.grow();
         });
         mine.seave((resource) => {
@@ -103,12 +109,9 @@ function onCollision(e){
         let objectTypeA = CollisionModule.identifyObject(pair.bodyA, population, mine, walls);
         let objectTypeB = CollisionModule.identifyObject(pair.bodyB, population, mine, walls);
         
-        if(OBJECTYPES[objectTypeA] || OBJECTYPES[objectTypeB]){
-            // wall or resource collision
-            console.log(objectTypeA);
-            console.log(objectTypeB);
+        // Only leks can collide with each other
+        if(objectTypeA != objectTypeB)
             return;
-        }
 
         let mother = population.populationArray[population.populationMap[idA]];
         let father = population.populationArray[population.populationMap[idB]];
@@ -123,16 +126,12 @@ function onCollision(e){
             mother = null;
             return;
         }
+
         // reproduce(mother, father);
     }
  }
 
 function reproduce(mother, father){
-    if(mother === undefined || father === undefined)
-        return;
-        
-    console.log("Kiss kiss between:", mother.id, father.id);
-    console.log("population size:", population.size);
     if(mother.father == father || mother.mother == father || father.mother == mother || father.father == mother)
         return;
     let child = BodySystemModule.Reproduce(mother, father);

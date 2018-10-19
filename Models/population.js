@@ -2,9 +2,8 @@ class Population{
     constructor(size){
         this.size = size;
         let _popArray = setPopulationArray.call(this);
-        let _popObject = setPopulationMap.call(this, _popArray);
         this.populationArray = (function (){return _popArray;})();
-        this.populationMap = (function (){return _popObject;})();
+        this.populationMap = setPopulationMap.call(this, _popArray);
     }
 
     show(){
@@ -23,7 +22,7 @@ class Population{
     add(member){
         this.size  += 1;
         this.populationArray.push(member);
-        this.populationMap[member.id] = member;
+        this.populationMap = setPopulationMap.call(this, this.populationArray);
         member.show();
     }
 
@@ -40,7 +39,7 @@ class Population{
         World.remove(world, member.body);
         World.remove(world, member.searchArea);
         this.populationArray.splice(index, 1);
-        delete this.populationMap[member.id];
+        this.populationMap = setPopulationMap.call(this, this.populationArray);
         console.log("I lek id:", member.id, "have died at the age of", member.age);
     }
 

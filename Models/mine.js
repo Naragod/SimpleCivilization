@@ -28,9 +28,9 @@ class Mine{
     }
 
     mine(){
-        this.seave(() => {
-            //
-        });
+        // this.seave(() => {
+            
+        // });
     }
 
 }

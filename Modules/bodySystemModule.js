@@ -4,7 +4,7 @@ class BodySystemModule{
 
     constructor(){}
 
-    static reproduce(mother, father){
+    static Reproduce(mother, father){
         let healthThreshold = 4;
         let charmThreshold = 4;
         let offSpringProperties = [

@@ -11,6 +11,7 @@ class Lek{
         };
         this.sizeGrowthRate = 1.005 + this.properties.growthFactor;
         this.body = addRectangularBody(this.x , this.y, this.size, this.options);
+        this.searchArea = addCircularBody(this.x, this.y, this.properties.sight);
         this.id = this.body.id;
         this.objectType = this.constructor.name;
     }
@@ -20,7 +21,7 @@ class Lek{
             strength : 0,
             speed : 0,
             health : 0,
-            sight : 120,
+            sight : 0,
             charm: 0,
             fertility : 0,
             altruism : 0,
@@ -35,8 +36,7 @@ class Lek{
         this.size = this.initialSize;
         this.finalSize = 20;
         this.speedFactor = 0.0001;
-        this.mutationRate = random(); 
-        this.searchArea = addCircularBody(this.x, this.y, this.properties.sight);
+        this.mutationRate = random() * 10; 
         
         if(this.mother !== null && this.father !== null){
             Object.keys(this.properties).forEach(prop => {
@@ -56,11 +56,7 @@ class Lek{
         this.properties.death *= 5;
         this.properties.speed *= this.speedFactor;
         this.properties.growthFactor /= 20;
-    }
-
-    survive(){
-        this.wander();
-        
+        this.properties.sight *= 30;
     }
 
     show(){
@@ -76,7 +72,7 @@ class Lek{
     }
 
     grow(){
-        if(!this.amIAlive())
+        if(!this.isAlive())
             return;
         // to grow, the lek consumes food
         let metabolism = 0.25;
@@ -100,18 +96,11 @@ class Lek{
         this.move(randX, randY);
     }
     
-    findResources(resources){
-        let range = this.properties.sight * 20;
-        let bounds = {a: this.searchArea.position};
-        Body.scale(this.searchArea, range, range);
-        nearbyResources = Query.region(resources, this.searchArea.bounds);
+    findClosestResource(resources){
+        let nearbyResources = Query.region(resources, this.searchArea.bounds);
         return nearbyResources.sort((a, b) => {
             return ((b.position.x + b.position.y)/2) - ((a.position.x + a.position.y)/2);
         }).filter((e, i) => i === 0); // return nearest resource;
-    }
-
-    onCollision(objectType, callback){
-
     }
 }
 
